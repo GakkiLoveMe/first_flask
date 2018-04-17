@@ -3,6 +3,7 @@
 应用程序配置文件
 """
 import redis
+import logging
 
 
 class BaseConfig:
@@ -31,10 +32,14 @@ class Developer(BaseConfig):
 
     DEBUG = True
 
+    DEBUG_LEVEL = logging.DEBUG
+
 
 class Production(BaseConfig):
     """生产环境"""
-    pass
+
+    DEBUG_LEVEL = logging.ERROR
+
 
 config_dict = {
     'develop': Developer,
