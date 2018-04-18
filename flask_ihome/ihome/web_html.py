@@ -23,9 +23,10 @@ def get_html_page(file_name):
 
     # 根据文件名查找并读取文件
     response = current_app.send_static_file(file_name)
-    print request.cookies.get('session')
+    # print request.cookies.get('session')
 
     # 生成csrftoken, 并设置
     csrf = generate_csrf()
     response.set_cookie('csrf_token', csrf)
+
     return response

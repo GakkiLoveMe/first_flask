@@ -7,6 +7,7 @@ from flask import json
 from flask import make_response
 from flask import request, jsonify
 from ihome.api_1_0 import api
+from ihome.models import User
 from ihome.utils.captcha.captcha import captcha
 from ihome import constants
 from ihome import redis_store  # redis存储对象
@@ -58,6 +59,15 @@ def get_sms_code():
         return jsonify(errno=RET.PARAMERR, errmsg='参数不完整')
     if not re.match(r'1[345678]\d{9}', mobile):
         return jsonify(errno=RET.DATAERR, errmsg='手机号错误')
+
+    # 判断用户是否注册
+    try:
+        user = User.query.filter(User.mobile == mobile).first()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库操作错误')
+    if user:
+        return jsonify(errno=RET.DATAEXIST, errmsg='该用户已存在')
 
     # 3,图片验证 码判断
     try:

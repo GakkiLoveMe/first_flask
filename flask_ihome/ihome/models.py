@@ -29,6 +29,24 @@ class User(BaseModel, db.Model):
     houses = db.relationship("House", backref="user")  # 用户发布的房屋
     orders = db.relationship("Order", backref="user")  # 用户下的订单
 
+    @property
+    def password(self):  # 防止外界直接获取密码
+        raise AttributeError('读取密码错误')
+
+    @password.setter  # 用于加密密码
+    def password(self, value):
+        self.password_hash = generate_password_hash(value)
+
+    def check_password(self, value):  # 用于验证密码
+        return check_password_hash(self.password_hash, value)
+
+    def user_to_dict(self):
+        return {
+            'user_id': self.id,
+            'name': self.name,
+            'avatar_url': self.avatar_url
+        }
+
 
 class Area(BaseModel, db.Model):
     """城区"""
