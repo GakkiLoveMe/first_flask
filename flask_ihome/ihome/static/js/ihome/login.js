@@ -3,36 +3,38 @@ function getCookie(name) {
     return r ? r[1] : undefined;
 }
 
-$(document).ready(function() {
-    $("#mobile").focus(function(){
+$(document).ready(function () {
+    $("#mobile").focus(function () {
         $("#mobile-err").hide();
     });
-    $("#password").focus(function(){
+    $("#password").focus(function () {
         $("#password-err").hide();
     });
-    // TODO: 添加登录表单提交操作
-    $(".form-login").submit(function(e){
-        e.preventDefault(); // 禁止表单的默认事件
-
+    // 添加登录表单提交操作
+    $(".form-login").submit(function (e) {
+        e.preventDefault();
         mobile = $("#mobile").val();
         passwd = $("#password").val();
         if (!mobile) {
             $("#mobile-err span").html("请填写正确的手机号！");
             $("#mobile-err").show();
             return;
-        } 
+        }
         if (!passwd) {
             $("#password-err span").html("请填写密码!");
             $("#password-err").show();
             return;
         }
 
-        var params = {
-            "mobile":mobile,
-            "password":passwd
-        }
+        // var params = {
+        //     "mobile": mobile,
+        //     "password": passwd,
+        // }
+        var params = {}
+        $(this).serializeArray().map(function (x) {
+            params[x.name] = x.value
+        })
 
-        // 发送登录请求
         $.ajax({
             url: "/api/v1.0/session",
             method: "post",
@@ -43,17 +45,13 @@ $(document).ready(function() {
             contentType: "application/json",
             success: function (resp) {
                 if (resp.errno == "0") {
-                    location.href = "/index.html";
-                    $('.register-login').hide();
-                    // alert($('.register-login').length)
-                    $('.user-info').show();
+                    location.href = "/index.html"
                 } else {
                     $("#password-err span").html(resp.errmsg)
                     $("#password-err").show()
                 }
             }
         })
-
 
     });
 })

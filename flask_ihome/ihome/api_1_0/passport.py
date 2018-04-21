@@ -1,13 +1,15 @@
 # -*- coding:utf-8 -*-
-"""注册和登陆逻辑"""
+"""注册和登陆逻辑, 登陆后首页用户显示, 退出登陆"""
 import re
 
 from flask import current_app, session
+from flask import g
 from flask import request, jsonify
 
 from ihome import redis_store, db
 from ihome.api_1_0 import api
 from ihome.models import User
+from ihome.utils.commons import login_required
 from ihome.utils.response_code import RET
 
 
@@ -22,6 +24,7 @@ def user_register():
     phoneCode = dict_data.get('phoneCode')
     pwd = dict_data.get('password')
 
+    print mobile, phoneCode, pwd
     # 2,验证数据有效性
     if not all([mobile, phoneCode, pwd]):
         return jsonify(errno=RET.PARAMERR, errmsg='填写信息不完整')
@@ -72,16 +75,16 @@ def user_login():
     # 1,获取数据,用户名和密码
     dict_data = request.json
 
-    user_name = dict_data.get('mobile')
+    user_mobile = dict_data.get('mobile')
     pwd = dict_data.get('password')
 
     # 2,验证数据有效性
-    if not all([user_name, pwd]):
+    if not all([user_mobile, pwd]):
         return jsonify(errno=RET.PARAMERR, errmsg='用户名和密码不能为空')
 
     # 验证密码错误次数
     try:
-        num = redis_store.get('pwd_error_num:' + user_name)
+        num = redis_store.get('pwd_error_num:' + user_mobile)
     except Exception as e:
         current_app.logger.error(e)
         num = 0
@@ -97,7 +100,7 @@ def user_login():
 
     # 4,判断用户是否存在
     try:
-        user = User.query.filter(User.name==user_name).first()
+        user = User.query.filter(User.mobile == user_mobile).first()
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg='数据库操作错误')
@@ -108,8 +111,8 @@ def user_login():
     # 3,判断密码是否正确
     if not user.check_password(pwd):
         # 存储错误次数
-        redis_store.incr('pwd_error_num:' + user_name)  # 每次该key的值自动加一
-        redis_store.expire('pwd_error_num:' + user_name, 10)  # 过期时间
+        redis_store.incr('pwd_error_num:' + user_mobile)  # 每次该key的值自动加一
+        redis_store.expire('pwd_error_num:' + user_mobile, 10)  # 过期时间
         return jsonify(errno=RET.PWDERR, errmsg='密码错误')
 
     # 5,记录登陆状态
@@ -119,3 +122,35 @@ def user_login():
 
     # 6,返回登陆成功的状态信息
     return jsonify(errno=RET.OK, errmsg='登陆成功')
+
+
+@api.route(r'/session')
+@login_required
+def show_user_name():
+    """显示登陆后的用户名"""
+    # 1,获取用户id
+    user_id = g.user_id
+
+    # 2,查询用户
+    try:
+        user = User.query.filter(User.id == user_id).first()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询数据失败')
+    # 判断用户是否存在
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg='没有此用户')
+
+    # 3,获取用户名,
+    name = user.name
+
+    # 4,返回数据
+    return jsonify(errno=RET.OK, errmsg='', data={'name': name, 'user_id': user_id})
+
+
+@api.route(r'/session', methods=['DELETE'])
+def logout():
+    """用户登出"""
+    # 删除session
+    session.clear()
+    return jsonify(errno=RET.OK, errmsg='清除session信息')

@@ -92,17 +92,19 @@ def get_sms_code():
     # 4,发送短信
     # 生成短信码
     sms_code = '%06d' % random.randint(0, 999999)
+    print sms_code
 
-    try:
-        ccp = CCP()
-        result = ccp.sendTemplateSMS(mobile, [sms_code, 5], 1)
-    except Exception as e:
-        current_app.logger.error(e)
-        return jsonify(errno=RET.THIRDERR, errmsg='短信发送失败')
-
-    # 短信发送状态码验证
-    if result == '-1':
-        return jsonify(errno=RET.THIRDERR, errmsg='短信发送失败')
+    """*******禁用短信发送********"""
+    # try:
+    #     ccp = CCP()
+    #     result = ccp.sendTemplateSMS(mobile, [sms_code, 5], 1)
+    # except Exception as e:
+    #     current_app.logger.error(e)
+    #     return jsonify(errno=RET.THIRDERR, errmsg='短信发送失败')
+    #
+    # # 短信发送状态码验证
+    # if result == '-1':
+    #     return jsonify(errno=RET.THIRDERR, errmsg='短信发送失败')
 
     # 5,redis中储存短信验证
     try:

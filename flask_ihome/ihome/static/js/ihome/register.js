@@ -16,29 +16,21 @@ function generateUUID() {
     return uuid;
 }
 var imageCodeId = ""
-var pre_ImageCodeId = ""
-
+var preImageCodeId = ""
 // 生成一个图片验证码的编号，并设置页面中图片验证码img标签的src属性
 function generateImageCode() {
-
-    //生成随机字符串编号
+    // 1. 生成编号
     imageCodeId = generateUUID()
-
-    //拼接url
-    image_url = "/api/v1.0/image_code?cur_id=" + imageCodeId + "&pre_id=" + pre_ImageCodeId
-
-    //设置标签的img, attr属性
-    $(".image-code>img").attr("src",image_url)
-
-    //记录上一次的图片编号
-    pre_ImageCodeId = imageCodeId
-
+    // 2. 设置页面中图片验证码img标签的src属性
+    var url = "/api/v1.0/image_code?cur_id=" + imageCodeId + "&pre_id=" + preImageCodeId
+    // 找到image-code标签下的img标签，并设置src的属性值
+    $(".image-code>img").attr("src", url)
+    preImageCodeId = imageCodeId
 }
 
 function sendSMSCode() {
     // 校验参数，保证输入框有数据填写
     $(".phonecode-a").removeAttr("onclick");
-
     var mobile = $("#mobile").val();
     if (!mobile) {
         $("#mobile-err span").html("请填写正确的手机号！");
@@ -54,15 +46,13 @@ function sendSMSCode() {
         return;
     }
 
-    //拼接请求参数
     var params = {
-
-        "image_code":imageCode,
-        "image_code_id":imageCodeId,
-        "mobile":mobile
+        "mobile": mobile,
+        "image_code": imageCode,
+        "image_code_id": imageCodeId
     }
 
-    // TODO: 通过ajax方式向后端接口发送请求，让后端发送短信验证码
+    //  通过ajax方式向后端接口发送请求，让后端发送短信验证码
     $.ajax({
         url: "/api/v1.0/sms_code",
         type: "post",
@@ -74,7 +64,7 @@ function sendSMSCode() {
         success: function (resp) {
             if (resp.errno == "0") {
                 // 代表发送成功
-                var num = 10
+                var num = 60
                 var t = setInterval(function () {
                     if (num == 1) {
                         // 倒计时结束,将当前倒计时给清除掉
@@ -118,9 +108,10 @@ $(document).ready(function() {
         $("#password2-err").hide();
     });
 
-    // TODO: 注册的提交(判断参数是否为空)
+    // 注册的提交(判断参数是否为空)
+
     $(".form-register").submit(function (e) {
-        e.preventDefault() //禁止表单的默认事件
+        e.preventDefault()
 
         // 取到用户输入的内容
         var mobile = $("#mobile").val()
@@ -148,14 +139,12 @@ $(document).ready(function() {
             $("#password2-err").show();
             return;
         }
-		
-        // 参数拼接
-        var params = {
-            "mobile":mobile,
-            "phoneCode":phonecode,
-            "password":password
-        }
-		// 发送请求
+
+        var params = {}
+        $(this).serializeArray().map(function (x) {
+            params[x.name] = x.value
+        })
+
         $.ajax({
             url:"/api/v1.0/user",
             type: "post",

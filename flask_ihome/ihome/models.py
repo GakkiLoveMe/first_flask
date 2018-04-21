@@ -44,8 +44,11 @@ class User(BaseModel, db.Model):
         return {
             'user_id': self.id,
             'name': self.name,
-            'avatar_url': self.avatar_url
-        }
+            'mobile': self.mobile,
+            'real_name': self.real_name,
+            'id_card': self.id_card,
+            'avatar_url': constants.QINIU_DOMIN_PREFIX + self.avatar_url if self.avatar_url else ''
+        }                                                           # 有值用值，没有用＇＇
 
 
 class Area(BaseModel, db.Model):
