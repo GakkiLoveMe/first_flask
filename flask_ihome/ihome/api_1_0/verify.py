@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 用于图片验证和短信验证
-"""
+"""""
 from flask import current_app
 from flask import json
 from flask import make_response
@@ -17,6 +17,7 @@ from ihome.utils.sms import CCP
 from ihome.utils.response_code import RET
 
 
+"""图片验证"""
 @api.route(r'/image_code')
 def get_image_code():
     """图片验证"""
@@ -43,6 +44,7 @@ def get_image_code():
     return response
 
 
+"""用于短信验证"""
 @api.route(r'/sms_code', methods=['POST'])
 def get_sms_code():
     """用于短信验证"""

@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
-"""注册和登陆逻辑, 登陆后首页用户显示, 退出登陆"""
+"""
+注册和登陆逻辑, 登陆后首页用户显示, 退出登陆
+"""""
 import re
 
 from flask import current_app, session
@@ -13,6 +15,7 @@ from ihome.utils.commons import login_required
 from ihome.utils.response_code import RET
 
 
+"""注册"""
 @api.route(r'/user', methods=['POST'])
 def user_register():
     """注册
@@ -69,6 +72,7 @@ def user_register():
     return jsonify(errno=RET.OK, errmsg='注册成功')
 
 
+"""用户登陆逻辑"""
 @api.route(r'/session', methods=['POST'])
 def user_login():
     """用户登陆逻辑"""
@@ -124,6 +128,7 @@ def user_login():
     return jsonify(errno=RET.OK, errmsg='登陆成功')
 
 
+"""显示登陆后的用户名"""
 @api.route(r'/session')
 @login_required
 def show_user_name():
@@ -148,6 +153,7 @@ def show_user_name():
     return jsonify(errno=RET.OK, errmsg='', data={'name': name, 'user_id': user_id})
 
 
+"""用户登出"""
 @api.route(r'/session', methods=['DELETE'])
 def logout():
     """用户登出"""

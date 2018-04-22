@@ -59,6 +59,8 @@ function updateHouseData(action) {
                     $(".house-list").append(template("house-list-tmpl", {"houses": resp.data.houses}))
                 }
             }
+        }else {
+            $(".house-list").html("未查询到数据");
         }
     })
 }

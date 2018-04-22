@@ -1,4 +1,7 @@
 # -*- coding:utf-8 -*-
+"""
+app启动入口
+"""""
 # from flask import Flask
 # from flask_sqlalchemy import SQLAlchemy
 # from config import config_dict

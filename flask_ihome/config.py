@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 应用程序配置文件
-"""
+"""""
 import redis
 import logging
 

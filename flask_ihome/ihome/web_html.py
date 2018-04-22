@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
 创建蓝图,用于优化静态文件的访问
-"""
+"""""
 from flask import Blueprint
 from flask import current_app, request
 from flask_wtf.csrf import generate_csrf  # 用于生成csrftoken

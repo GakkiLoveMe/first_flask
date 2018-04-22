@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
-"""用于展示个人信息, 图片上传, 用户名修改, 用户实名认证, 显示房源信息"""
+"""
+用于展示个人信息, 图片上传, 用户名修改, 用户实名认证, 显示房源信息
+"""""
 from flask import current_app, jsonify
 from flask import g
 from flask import request
@@ -13,6 +15,7 @@ from ihome.utils.response_code import RET
 from ihome.utils.image_storage import image_storage
 
 
+"""显示个人信息"""
 @api.route(r'/user')
 def user_profile():
     """显示个人信息"""
@@ -39,6 +42,7 @@ def user_profile():
     return jsonify(errno=RET.OK, errmsg='发送成功', data=user.user_to_dict())
 
 
+"""用于个人图片上传"""
 @api.route(r'/user/avatar', methods=['POST'])
 @login_required
 def image_upload():
@@ -83,6 +87,7 @@ def image_upload():
     return jsonify(errno=RET.OK, errmsg="上传成功", data={'avatar_url': image_url})
 
 
+"""用于修改用户名"""
 @api.route(r'/user/name', methods=['PUT'])
 @login_required
 def rename():
@@ -117,6 +122,7 @@ def rename():
     return jsonify(errno=RET.OK, errmsg='用户名修改成功')
 
 
+"""获取认证信息"""
 @api.route(r'/user/auth')
 @login_required
 def get_user_auth():
@@ -139,6 +145,7 @@ def get_user_auth():
     return jsonify(errno=RET.OK, errmsg='认证信息', data=user.user_to_dict())
 
 
+"""填写用户认证"""
 @api.route(r'/user/auth', methods=['POST'])
 @login_required
 def set_user_auth():
@@ -180,6 +187,7 @@ def set_user_auth():
     return jsonify(errno=RET.OK, errmsg='认证信息已修改')
 
 
+"""显示发布的房源"""
 @api.route(r'/users/house')
 @login_required
 def show_houses():
