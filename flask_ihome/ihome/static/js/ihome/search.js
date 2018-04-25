@@ -60,7 +60,7 @@ function updateHouseData(action) {
                 }
             }
         }else {
-            $(".house-list").html("未查询到数据");
+            $(".house-list").html("<h2>未查询到数据</h2>");
         }
     })
 }

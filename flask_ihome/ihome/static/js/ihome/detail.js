@@ -40,7 +40,9 @@ $(document).ready(function(){
                 $(".book-house").attr("href", "/booking.html?hid=" + resp.data.house.hid)
             }
 
-        }
+        }else {
+            window.location.href='/login.html';
+        };
     })
 
 

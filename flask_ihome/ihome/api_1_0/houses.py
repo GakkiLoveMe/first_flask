@@ -2,7 +2,7 @@
 """
 显示区域, 发布新房源, 显示房源信息, 上传图片, 显示热门房源, 搜索房源信息
 """""
-import datetime
+from datetime import datetime
 from flask import current_app, jsonify
 from flask import g
 from flask import json
@@ -216,10 +216,12 @@ def search_houses():
     # 页码数据转换,参数校验
     try:
         p = int(p)
-        # if sd:  # TODO 数据格式转换
-            # sd = datetime.strptime(sd, '%Y-%m-%d')
+        if sd:  # TODO 数据格式转换
+            sd = datetime.strptime(sd, '%Y-%m-%d')
+        if ed:
+            ed = datetime.strptime(ed, '%Y-%m-%d')
         if sd and ed:
-            assert sd >= ed, Exception('开始时间不能大于结束时间')
+            assert sd <= ed, Exception('开始时间不能大于结束时间')
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DATAERR, errmsg='分页数据格式不正确')
@@ -305,7 +307,7 @@ def search_houses():
         # 储存数据, 设置过期时间
         redis_key = 'search_%s_%s_%s_%s' % (aid, sd, ed, sk)
         redis_store.hset(redis_key, p, resp_data)
-        redis_store.expire(redis_key, constants.HOME_PAGE_DATA_REDIS_EXPIRES)
+        redis_store.expire(redis_key, constants.HOUSE_LIST_REDIS_EXPIRES)
         # 执行事务
         pipeline.execute()
     except Exception as e:
@@ -316,8 +318,11 @@ def search_houses():
 
 """房屋详尽信息"""
 @api.route(r'/houses/<int:house_id>')
+@login_required
 def house_detail(house_id):
-    # 接收数据
+    # 接收数据,user_id
+    user_id = g.user_id
+
     # 查询数据库
     try:
         house = House.query.filter(House.id == house_id).first()
@@ -330,4 +335,5 @@ def house_detail(house_id):
         return jsonify(errno=RET.DATAERR, errmsg='没有数据')
 
     # 返回响应
-    return jsonify(errno=RET.OK, errmsg='返回数据', data={'house': house.to_full_dict()})
+    resp = {'house': house.to_full_dict(), 'user_id': user_id}
+    return jsonify(errno=RET.OK, errmsg='返回数据', data=resp)

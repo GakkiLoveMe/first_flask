@@ -17,45 +17,88 @@ function getCookie(name) {
 $(document).ready(function(){
     $('.modal').on('show.bs.modal', centerModals);      //当模态框出现的时候
     $(window).on('resize', centerModals);
-    // 查询房东的订单
-    $.get("/api/v1.0/orders?role=landlord", function (resp) {
+    // 对于展示房源，只有认证后的用户才可以，所以先判断用户的实名认证状态
+    $.get("/api/v1.0/user/auth", function (resp) {
         if (resp.errno == "0") {
-            $(".orders-list").html(template("orders-list-tmpl", {"orders": resp.data.orders}))
+            if (resp.data.real_name && resp.data.id_card) {
+                // 如果用户已实名认证,那么就去请求之前发布的房源
+                // 查询房东的订单
+                $.get("/api/v1.0/orders?role=landlord", function (resp) {
+                    if (resp.errno == "0" && resp.data.orders.length != 0) {
+                        $(".orders-list").html(template("orders-list-tmpl", {"orders": resp.data.orders}))
 
-            // 查询成功之后需要设置接单和拒单的处理
-            $(".order-accept").on("click", function(){
-                var orderId = $(this).parents("li").attr("order-id");
-                $(".modal-accept").attr("order-id", orderId);
-            });
-            $(".modal-accept").on("click", function () {
-                var orderId = $(".modal-accept").attr("order-id")
-                $.ajax({
-                    url: "/api/v1.0/orders/" + orderId,
-                    type: "put",
-                    contentType: "application/json",
-                    headers: {
-                        "X-CSRFToken": getCookie("csrf_token")
-                    },
-                    data: JSON.stringify({"action": "accept"}),
-                    success: function (resp) {
-                        if (resp.errno == "0") {
-                            // 1. 设置订单状态的html
-                            $(".orders-list>li[order-id="+ orderId +"]>div.order-content>div.order-text>ul li:eq(4)>span").html("已接单");
-                            // 2. 隐藏接单和拒单操作
-                            $("ul.orders-list>li[order-id="+ orderId +"]>div.order-title>div.order-operate").hide();
-                            // 3. 隐藏弹出的框
-                            $("#accept-modal").modal("hide");
-                        }else{
-                            alert(resp.errmsg)
-                        }
+                        // 查询成功之后需要设置接单和拒单的处理
+                        $(".order-accept").on("click", function(){
+                            var orderId = $(this).parents("li").attr("order-id");
+                            $(".modal-accept").attr("order-id", orderId);
+                        });
+                        $(".modal-accept").on("click", function () {
+                            var order_id = $(this).attr("order-id")
+                            $.ajax({
+                                url: "/api/v1.0/orders/" + order_id + "?action=accept",
+                                type: "put",
+                                headers: {
+                                    "X-CSRFToken": getCookie("csrf_token")
+                                },
+                                success: function (resp) {
+                                    if (resp.errno == "0") {
+                                        // 1. 设置订单状态的html
+                                        $(".orders-list>li[order-id="+ order_id +"]>div.order-content>div.order-text>ul li:eq(4)>span").html("已接单");
+                                        // 2. 隐藏接单和拒单操作
+                                        $("ul.orders-list>li[order-id="+ order_id +"]>div.order-title>div.order-operate").hide();
+                                        // 3. 隐藏弹出的框
+                                        $("#accept-modal").modal("hide");
+                                    }
+                                }
+                            })
+                            })
+                        $(".order-reject").on("click", function(){
+                            var orderId = $(this).parents("li").attr("order-id");
+                            $(".modal-reject").attr("order-id", orderId);
+                        });
+                        $(".modal-reject").on("click", function () {
+                            var order_id = $(this).attr("order-id")
+                            // 拒单的原因
+                            var reason = $("#reject-reason").val()
+                            if (!reason) {
+                                alert("请输入原因")
+                                return
+                            }
+                            $.ajax({
+                                url: "/api/v1.0/orders/" + order_id + "?action=reject",
+                                type: "put",
+                                headers: {
+                                    "X-CSRFToken": getCookie("csrf_token")
+                                },
+                                data: JSON.stringify({"reason": reason}),
+                                contentType: "application/json",
+                                success: function (resp) {
+                                    if (resp.errno == "0") {
+                                        // 1. 设置订单状态的html
+                                        $(".orders-list>li[order-id="+ order_id +"]>div.order-content>div.order-text>ul li:eq(4)>span").html("已拒单");
+                                        // 2. 隐藏接单和拒单操作
+                                        $("ul.orders-list>li[order-id="+ order_id +"]>div.order-title>div.order-operate").hide();
+                                        // 3. 隐藏弹出的框
+                                        $("#reject-modal").modal("hide");
+                                    }
+                                }
+                            })
+                        })
+
+                    }else {
+                        $(".orders-list").html('<h3 style="font-size: 20px;">没有房源数据</h3>');
                     }
-                })
-            })
-            $(".order-reject").on("click", function(){
-                var orderId = $(this).parents("li").attr("order-id");
-                $(".modal-reject").attr("order-id", orderId);
-            });
+                });
+
+            }else {
+                $('.orders-list').hide();
+                $(".auth-warn").show();
+            }
+
+        }else if (resp.errno == "4101") {
+            location.href = "/login.html"
         }
     })
+
 
 });

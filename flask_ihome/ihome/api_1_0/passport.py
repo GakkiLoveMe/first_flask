@@ -93,6 +93,9 @@ def user_login():
         current_app.logger.error(e)
         num = 0
 
+    if not num:  # num为none情况
+        num = 0
+
     try:
         num = int(num)
     except Exception as e:
@@ -158,5 +161,9 @@ def show_user_name():
 def logout():
     """用户登出"""
     # 删除session
-    session.clear()
+    # session.clear()
+    session.pop('user_id', None)
+    session.pop('user_name', None)
+    session.pop('user_mobile', None)
+
     return jsonify(errno=RET.OK, errmsg='清除session信息')

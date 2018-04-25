@@ -20,7 +20,7 @@ $(document).ready(function(){
 
     // 查询房客订单
     $.get("/api/v1.0/orders?role=custom", function (resp) {
-        if (resp.errno == "0") {
+        if (resp.errno == "0" && resp.data.orders.length != 0) {
             $(".orders-list").html(template("orders-list-tmpl", {"orders": resp.data.orders}))
             // 查询成功之后需要设置评论的相关处理
             $(".order-comment").on("click", function(){
@@ -62,6 +62,8 @@ $(document).ready(function(){
                     }
                 })
             })
+        }else {
+            $('.orders-list').html('<h3 style="font-size: 20px;">没有订单数据!</h3>')
         }
     })
 });
